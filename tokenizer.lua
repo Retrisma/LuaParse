@@ -16,7 +16,8 @@ reserved_symbols_literal = construct_literal(reserved_symbols)
 token = {
     TSym = function(symbol) return { "TSym", symbol } end,
     TId = function(ident) return { "TId", ident } end,
-    TNum = function(num) return { "TNum", num } end
+    TNum = function(num) return { "TNum", num } end,
+    TStr = function(str) return { "TStr", str } end
 }
 
 table.insert(grammar_levels, token)
@@ -24,6 +25,7 @@ table.insert(grammar_levels, token)
 whitespace_regex = "^([ \f\n\r\t\v]+)"
 identifier_regex = "^([a-zA-Z_]%w*)"
 number_regex = "^(%d*%.?%d+)"
+string_literal_regex = "^\".*\""
 
 function match_reserved_symbols(str)
     for i,v in ipairs(reserved_symbols_literal) do
@@ -70,7 +72,14 @@ function tokenize(input)
             return
         end
 
-        -- TODO: match string literal
+        -- match string literal
+        scratch = string.match(input, string_literal_regex)
+        if scratch then
+            local out = string.sub(scratch, 2, #scratch - 1)
+            table.insert(token_stream, token.TStr(out))
+            input = string.gsub(input, string_literal_regex, "")
+            return
+        end
     end
 
     while string.len(input) > 0 do

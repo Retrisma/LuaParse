@@ -1,4 +1,4 @@
----@param token_type "TId"|"TNum"|"TSym"
+---@param token_type "TId"|"TNum"|"TSym"|"TStr"
 ---@return Parser
 function parse_any(token_type)
     return new_parser(function(stream)
@@ -24,6 +24,9 @@ parse_any_number = parse_any("TNum")
 
 ---@type Parser
 parse_any_symbol = parse_any("TSym")
+
+---@type Parser
+parse_any_string = parse_any("TStr")
 
 ---@param symbol string
 ---@return Parser
@@ -70,12 +73,29 @@ local parse_unop = choice {
     ret_unop("-", unop.Neg)
 }
 
+local parse_table_field = choice {
+    between_brackets(parse_exp) & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFExp,
+    parse_any_ident & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFId,
+    parse_exp ~ tbl_field.TFNone
+}
+
+local parse_table_constructor = between_braces(sep_and_end(parse_table_field, parse_symbol(",") | parse_symbol(";")))
+
+local parse_function_args = choice {
+    between_parens(sep(parse_exp, parse_symbol(","))),
+    parse_table_constructor,
+    parse_any_string
+}
+
 local parse_rhs = choice {
     between_brackets(parse_exp) ~ function(idx)
         return function(e) return exp.Proj(e, idx) end
     end,
     parse_symbol(".") >> parse_any_ident ~ function(idx)
         return function(e) return exp.Proj(e, idx) end
+    end,
+    parse_function_args ~ function(args)
+        return function(e) return exp.FCall(e, args) end
     end
 }
 
@@ -86,12 +106,6 @@ local parse_lhs = choice {
 
 parse_lrhs = suffix1(parse_lhs, parse_rhs)
 
-local parse_table_field = choice {
-    between_brackets(parse_exp) & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFExp,
-    parse_any_ident & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFId,
-    parse_exp ~ tbl_field.TFNone
-}
-
 local parse_term = choice {
     parse_lrhs,
     parse_symbol("nil") ~ exp.Nil,
@@ -99,8 +113,9 @@ local parse_term = choice {
     parse_symbol("false") ~ exp.CBool,
     parse_symbol("...") ~ exp.Etc,
     parse_any_number ~ exp.CNum,
+    parse_any_string ~ exp.CStr,
     parse_symbol("function") >> between_parens(sep(parse_any_ident, parse_symbol(","))) ~ exp.CFun, --todo: add body
-    between_braces(sep_and_end(parse_table_field, parse_symbol(",") | parse_symbol(";"))) ~ exp.CTbl,
+    parse_table_constructor ~ exp.CTbl,
 }
 
 local and_unop = prefix1(parse_term, parse_unop)
