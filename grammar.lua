@@ -1,8 +1,19 @@
 block = function(stmts) return stmts end
 
+option = {
+    Some = function(val) return { "Some", val } end,
+    None = function() return {} end
+}
+
 stmt = {
     Assn = function(ident, val) return { "Assn", ident, val } end,
     ITE = function(if_blocks, else_block_option) return { "ITE", if_blocks, else_block_option } end
+}
+
+tbl_field = {
+    TFExp = function(exp1, exp2) return { "TFExp", exp1, exp2 } end,
+    TFId = function(id, exp) return { "TFId", id, exp } end,
+    TFNone = function(exp) return { "TFNone", exp } end
 }
 
 exp = {
@@ -11,6 +22,8 @@ exp = {
     CBool = function(bool) return { "CBool", bool } end,
     CNum = function(num) return { "CNum", num } end,
     CStr = function(str) return { "CStr", str } end,
+    CVar = function(id) return { "CVar", id } end,
+    CTbl = function(fields) return { "CTbl", fields } end,
     Binop = function(binop) return binop end,
     Unop = function(unop) return unop end,
     CFun = function(args, block) return { "CFun", args, block } end,
@@ -31,6 +44,16 @@ unop = {
     Neg = function(exp) return { "Neg", exp } end
 }
 
+grammar_levels = { option, stmt, tbl_field, exp, binop, unop }
+
+for _,t in pairs(grammar_levels) do
+    for k,v in pairs(t) do
+        tbl_field[k] = function(o)
+            return v(table.unfold(o))
+        end
+    end
+end
+
 reserved_words = {
     "and", "break", "do", "else", "elseif",
     "end", "false", "for", "function", "goto", "if",
@@ -40,13 +63,14 @@ reserved_words = {
 }
 
 reserved_symbols = {
+    "...",
+    "<<", ">>", "//", "..",
+    "==", "~=", "<=", ">=", "::",
     "+", "-", "*", "/",
     "&", "~", "|",
     "%", "^", "#", "=",
     "<", ">",
     "(", ")", "{", "}", "[", "]",
     ";", ":", ",", ".",
-    "<<", ">>", "//", "..", "...",
-    "==", "~=", "<=", ">=", "::",
 }
 

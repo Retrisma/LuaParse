@@ -66,7 +66,14 @@ local parse_binop = choice {
 local parse_unop = choice {
     ret_unop("#", unop.Len),
     ret_unop("~", unop.Not),
+    ret_unop("not", unop.Not),
     ret_unop("-", unop.Neg)
+}
+
+local parse_table_field = choice {
+    between_brackets(parse_exp) & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFExp,
+    parse_any_ident & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFId,
+    parse_exp ~ tbl_field.TFNone
 }
 
 local parse_term = choice {
@@ -75,9 +82,8 @@ local parse_term = choice {
     parse_symbol("false") ~ exp.CBool,
     parse_symbol("...") ~ exp.Etc,
     parse_any_number ~ exp.CNum,
-    parse_symbol("function") >> between_parens(sep(parse_any_ident, parse_symbol(","))) ~ exp.CFun,
-    -- unbound left recursion, need to rework chainl1 to handle it
-    -- parse_exp & between_parens(sep(parse_exp, parse_symbol(","))) ~ exp.FCall,
+    parse_symbol("function") >> between_parens(sep(parse_any_ident, parse_symbol(","))) ~ exp.CFun, --todo: add body
+    between_braces(sep_and_end(parse_table_field, parse_symbol(",") | parse_symbol(";"))) ~ exp.CTbl,
     between_parens(parse_exp),
 }
 

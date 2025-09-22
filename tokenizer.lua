@@ -19,6 +19,8 @@ token = {
     TNum = function(num) return { "TNum", num } end
 }
 
+table.insert(grammar_levels, token)
+
 whitespace_regex = "^([ \f\n\r\t\v]+)"
 identifier_regex = "^([a-zA-Z_]%w*)"
 number_regex = "^(%d*%.?%d+)"
@@ -41,7 +43,7 @@ function tokenize(input)
         input = string.gsub(input, whitespace_regex, "")
 
         -- match number-like strings
-        scratch = string.match(input, number_regex)
+        local scratch = string.match(input, number_regex)
         if scratch then
             table.insert(token_stream, token.TNum(tonumber(scratch)))
             input = string.gsub(input, number_regex, "")
@@ -49,7 +51,7 @@ function tokenize(input)
         end
 
         -- match reserved symbols
-        local scratch = match_reserved_symbols(input)
+        scratch = match_reserved_symbols(input)
         if scratch then
             table.insert(token_stream, token.TSym(scratch))
             input = string.sub(input, #scratch + 1)

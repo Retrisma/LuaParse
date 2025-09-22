@@ -36,6 +36,18 @@ function table.unfold2(tbl)
     return tbl[1], tbl[2]
 end
 
+function table.unfold(tbl)
+    local unfolders = {
+        [2] = table.unfold2
+    }
+
+    if (not tbl) or #tbl <= 1 then
+        return tbl
+    else 
+        return unfolders[#tbl](tbl)
+    end
+end
+
 function table.map(tbl, fn)
     for k,v in pairs(tbl) do
         tbl[k] = fn(v)
@@ -61,7 +73,7 @@ end
 function node_titles()
     local out = {}
 
-    for _,v in pairs{ binop, unop, exp, stmt, token } do
+    for _,v in pairs(grammar_levels) do
         for _, node in pairs(v) do
             table.insert(out, node() and node()[1] or nil)
         end
@@ -72,12 +84,24 @@ end
 
 function print_tree(tree)
     local titles = node_titles()
+
+    local function iter(tree)
+        if type(tree) == "table" then
+            if table.has(titles, tree[1]) then
+                print_node(tree)
+            else
+                print_list(tree)
+            end
+        else
+            io.write(tree)
+        end
+    end
     
     function print_node(node)
         for i,v in ipairs(node) do
             if i == 1 then io.write(v, "(")
-            elseif i == 2 then print_tree(v)
-            else io.write(",") print_tree(v) end
+            elseif i == 2 then iter(v)
+            else io.write(",") iter(v) end
         end
         io.write(")")
     end
@@ -86,18 +110,10 @@ function print_tree(tree)
         io.write("{")
         for i,v in ipairs(list) do
             if i > 1 then io.write(";") end
-            print_tree(v)
+            iter(v)
         end
         io.write("}")
     end
 
-    if type(tree) == "table" then
-        if table.has(titles, tree[1]) then
-            print_node(tree)
-        else
-            print_list(tree)
-        end
-    else
-        io.write(tree)
-    end
+    iter(tree)
 end

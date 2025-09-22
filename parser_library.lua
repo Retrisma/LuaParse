@@ -165,9 +165,23 @@ end
 ---@param parser Parser
 ---@return Parser
 function many(parser)
-    function parser_fn(stream)
+    local function parser_fn(stream)
         local head, tail = zero_or_more(parser, stream)
         return success(head, tail)
+    end
+
+    return new_parser(parser_fn)
+end
+
+function optional(parser)
+    local function parser_fn(stream)
+        local result = parser % stream
+
+        if result.status == "success" then
+            return success(option.Some(result.head), result.tail)
+        else
+            return success(option.None(), stream)
+        end
     end
 
     return new_parser(parser_fn)
@@ -184,6 +198,10 @@ end
 
 function sep(parser, sep_parser)
     return sep_by_1(parser, sep_parser) | return_p( {} )
+end
+
+function sep_and_end(parser, sep_parser)
+    return sep(parser, sep_parser) << optional(sep_parser)
 end
 
 function between(symbol1, parser, symbol2)
