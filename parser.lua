@@ -70,6 +70,22 @@ local parse_unop = choice {
     ret_unop("-", unop.Neg)
 }
 
+local parse_rhs = choice {
+    between_brackets(parse_exp) ~ function(idx)
+        return function(e) return exp.Proj(e, idx) end
+    end,
+    parse_symbol(".") >> parse_any_ident ~ function(idx)
+        return function(e) return exp.Proj(e, idx) end
+    end
+}
+
+local parse_lhs = choice {
+    parse_any_ident ~ exp.CVar,
+    between_parens(parse_exp)
+}
+
+parse_lrhs = suffix1(parse_lhs, parse_rhs)
+
 local parse_table_field = choice {
     between_brackets(parse_exp) & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFExp,
     parse_any_ident & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFId,
@@ -77,6 +93,7 @@ local parse_table_field = choice {
 }
 
 local parse_term = choice {
+    parse_lrhs,
     parse_symbol("nil") ~ exp.Nil,
     parse_symbol("true") ~ exp.CBool,
     parse_symbol("false") ~ exp.CBool,
@@ -84,7 +101,6 @@ local parse_term = choice {
     parse_any_number ~ exp.CNum,
     parse_symbol("function") >> between_parens(sep(parse_any_ident, parse_symbol(","))) ~ exp.CFun, --todo: add body
     between_braces(sep_and_end(parse_table_field, parse_symbol(",") | parse_symbol(";"))) ~ exp.CTbl,
-    between_parens(parse_exp),
 }
 
 local and_unop = prefix1(parse_term, parse_unop)

@@ -232,6 +232,14 @@ function prefix1(parser, op_parser)
     return rest()
 end
 
+function suffix1(parser, op_parser)
+    local function rest(base)
+        return op_parser // function(f) return rest(f(base)) end | return_p(base)
+    end
+
+    return parser // rest
+end
+
 function create_parser_forwarded_to_ref()
     local dummy_parser = new_parser(function() error "unfixed forwarded parser" end)
 

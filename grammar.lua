@@ -27,7 +27,8 @@ exp = {
     Binop = function(binop) return binop end,
     Unop = function(unop) return unop end,
     CFun = function(args, block) return { "CFun", args, block } end,
-    FCall = function(exp, args) return { "FCall", exp, args } end
+    FCall = function(exp, args) return { "FCall", exp, args } end,
+    Proj = function(p_exp, exp) return { "Proj", p_exp, exp } end
 }
 
 binop = {
