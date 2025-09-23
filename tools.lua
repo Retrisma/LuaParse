@@ -41,9 +41,9 @@ function table.unfold(tbl)
         [2] = table.unfold2
     }
 
-    if (not tbl) or #tbl <= 1 then
+      if (not tbl) or (type(tbl) ~= "table") or #tbl <= 1 then
         return tbl
-    else 
+    else
         return unfolders[#tbl](tbl)
     end
 end
@@ -70,24 +70,10 @@ function print_node(node)
     io.write(")")
 end
 
-function node_titles()
-    local out = {}
-
-    for _,v in pairs(grammar_levels) do
-        for _, node in pairs(v) do
-            table.insert(out, node() and node()[1] or nil)
-        end
-    end
-
-    return out
-end
-
 function print_tree(tree)
-    local titles = node_titles()
-
     local function iter(tree)
         if type(tree) == "table" then
-            if table.has(titles, tree[1]) then
+            if table.has(node_titles, tree[1]) then
                 print_node(tree)
             else
                 print_list(tree)

@@ -14,5 +14,5 @@ print()
 
 token_stream = table.reverse(token_stream)
 
-out = parse_exp % token_stream
+out = parse_stmt % token_stream
 print_tree(out.head or out.reason)

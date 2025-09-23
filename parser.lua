@@ -47,6 +47,7 @@ parse_symbol = function(symbol)
 end
 
 parse_exp, parse_exp_ref = create_parser_forwarded_to_ref()
+parse_stmt, parse_stmt_ref = create_parser_forwarded_to_ref()
 
 local function ret_binop(symbol, binop_def)
     return parse_symbol(symbol) >> return_p(function(x, y) return exp.Binop(binop_def(x, y)) end)
@@ -122,3 +123,7 @@ local and_unop = prefix1(parse_term, parse_unop)
 local and_binop = chainl1(and_unop, parse_binop)
 
 parse_exp_ref.value = and_binop
+
+parse_stmt_ref.value = choice {
+    sep(parse_lrhs, parse_symbol(",")) & (parse_symbol("=") >> sep(parse_exp, parse_symbol(","))) ~ stmt.Assn
+}

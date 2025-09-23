@@ -6,6 +6,7 @@ option = {
 }
 
 stmt = {
+    Pass = function() return { "Pass" } end,
     Assn = function(ident, val) return { "Assn", ident, val } end,
     ITE = function(if_blocks, else_block_option) return { "ITE", if_blocks, else_block_option } end
 }
@@ -47,9 +48,27 @@ unop = {
 
 grammar_levels = { option, stmt, tbl_field, exp, binop, unop }
 
+local function calc_node_titles()
+    local out = {}
+
+    for _,v in pairs(grammar_levels) do
+        for _, node in pairs(v) do
+            table.insert(out, node() and node()[1] or nil)
+        end
+    end
+
+    return out
+end
+
+node_titles = calc_node_titles()
+
 for _,t in pairs(grammar_levels) do
     for k,v in pairs(t) do
-        tbl_field[k] = function(o)
+        t[k] = function(o)
+            if type(o) == "table" and table.has(node_titles, o[1]) then
+                return v(o)
+            end
+
             return v(table.unfold(o))
         end
     end

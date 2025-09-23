@@ -24,7 +24,13 @@ local parse_exp_tests = {
     { "f()", exp.FCall(exp.CVar("f"), {})},
     { "f(x)", exp.FCall(exp.CVar("f"), { exp.CVar("x")})},
     { "f(x, 4, true, { a })", exp.FCall(exp.CVar("f"), { exp.CVar("x"), exp.CNum(4), exp.CBool("true"), exp.CTbl({ exp.CVar("a")})})},
-    { "f(g(a))", exp.FCall(exp.CVar("f"), { exp.FCall(exp.CVar("g"), { exp.CVar("a")})})}
+    { "f(g(a))", exp.FCall{exp.CVar("f"), { exp.FCall(exp.CVar("g"), { exp.CVar("a")})}}}
+}
+
+local parse_stmt_tests = {
+    { "x = 5", stmt.Assn{{exp.CVar("x")}, {exp.CNum(5)}}},
+    { "x, y = 1, 2", stmt.Assn{{exp.CVar("x"), exp.CVar("y")}, {exp.CNum(1), exp.CNum(2)}}},
+    { "x[3] = true", stmt.Assn{{exp.Proj(exp.CVar("x"), exp.CNum(3))}, {exp.CBool("true")}}}
 }
 
 function ast_equal(ast, reference)
@@ -65,3 +71,4 @@ function run_tests(parser, tests)
 end
 
 run_tests(parse_exp, parse_exp_tests)
+run_tests(parse_stmt, parse_stmt_tests)
