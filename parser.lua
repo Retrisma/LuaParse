@@ -130,7 +130,9 @@ parse_exp_ref.value = and_binop
 
 parse_stmt_ref.value = choice {
     parse_symbol(";"),
-    sep(parse_lrhs, parse_symbol(",")) & (parse_symbol("=") >> sep(parse_exp, parse_symbol(","))) ~ stmt.Assn
+    sep(parse_lrhs, parse_symbol(",")) & parse_symbol("=") >> sep(parse_exp, parse_symbol(",")) ~ map2(stmt.Assn),
+    parse_symbol("while") >> parse_exp & parse_symbol("do") >> parse_block << parse_symbol("end") ~ map2(stmt.While),
+    parse_symbol("repeat") >> parse_block & parse_symbol("until") >> parse_exp ~ map2(stmt.Repeat)
 }
 
 parse_block_ref.value = many(parse_stmt) ~ block.Block

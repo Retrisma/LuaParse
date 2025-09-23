@@ -29,9 +29,13 @@ local parse_exp_tests = {
 }
 
 local parse_stmt_tests = {
-    { "x = 5", stmt.Assn{{exp.CVar("x")}, {exp.CNum(5)}}},
-    { "x, y = 1, 2", stmt.Assn{{exp.CVar("x"), exp.CVar("y")}, {exp.CNum(1), exp.CNum(2)}}},
-    { "x[3] = true", stmt.Assn{{exp.Proj(exp.CVar("x"), exp.CNum(3))}, {exp.CBool("true")}}}
+    { "x = 5", stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) },
+    { "x, y = 1, 2", stmt.Assn({exp.CVar("x"), exp.CVar("y")}, {exp.CNum(1), exp.CNum(2)}) },
+    { "x[3] = true", stmt.Assn({exp.Proj(exp.CVar("x"), exp.CNum(3))}, {exp.CBool("true")}) },
+    { "while true do x = 5 end", stmt.While(exp.CBool("true"), block.Block{ stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) })},
+    { "while y do end", stmt.While(exp.CVar("y"), block.Block{ })},
+    { "while x do while y do x = 5 end end", stmt.While(exp.CVar("x"), block.Block{stmt.While(exp.CVar("y"), block.Block{ stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) })})},
+    { "repeat x = 5 until true", stmt.Repeat(block.Block{ stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) }, exp.CBool("true"))}
 }
 
 function ast_equal(ast, reference)

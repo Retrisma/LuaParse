@@ -9,7 +9,9 @@ option = {
 
 stmt = {
     Assn = function(ident, val) return { "Assn", ident, val } end,
-    ITE = function(if_blocks, else_block_option) return { "ITE", if_blocks, else_block_option } end
+    While = function(exp, block) return { "While", exp, block } end,
+    Repeat = function(block, exp) return { "Repeat", block, exp } end,
+    ITE = function(if_blocks, else_if_blocks, else_block_option) return { "ITE", if_blocks, else_if_blocks, else_block_option } end
 }
 
 tbl_field = {
