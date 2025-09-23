@@ -14,8 +14,8 @@ local parse_exp_tests = {
     { "nil", exp.Nil() },
     { "{}", exp.CTbl({}) },
     { "{ 5 }", exp.CTbl({ tbl_field.TFNone(exp.CNum(5))}) },
-    { "{ 5, 6; }", exp.CTbl({ tbl_field.TFNone(exp.CNum(5)); tbl_field.TFNone(exp.CNum(5)) }) },
-    { "{ a = 5; [3] = 6 }", exp.CTbl({ tbl_field.TFId({"a", exp.CNum(5)}); tbl_field.TFExp({exp.CNum(3), exp.CNum(6)})}) },
+    { "{ 5, 6; }", exp.CTbl({ tbl_field.TFNone(exp.CNum(5)); tbl_field.TFNone(exp.CNum(6)) }) },
+    { "{ a = 5; [3] = 6 }", exp.CTbl({ tbl_field.TFId("a", exp.CNum(5)); tbl_field.TFExp(exp.CNum(3), exp.CNum(6))}) },
     { "x", exp.CVar("x") },
     { 'x["g"]', exp.Proj(exp.CVar("x"), exp.CStr("g"))},
     { "x.g", exp.Proj(exp.CVar("x"), "g")},
@@ -23,8 +23,9 @@ local parse_exp_tests = {
     { "x[g.a]", exp.Proj(exp.CVar("x"), exp.Proj(exp.CVar("g"), "a"))},
     { "f()", exp.FCall(exp.CVar("f"), {})},
     { "f(x)", exp.FCall(exp.CVar("f"), { exp.CVar("x")})},
+    { "f:m()", exp.MCall(exp.CVar("f"), "m", {})},
     { "f(x, 4, true, { a })", exp.FCall(exp.CVar("f"), { exp.CVar("x"), exp.CNum(4), exp.CBool("true"), exp.CTbl({ exp.CVar("a")})})},
-    { "f(g(a))", exp.FCall{exp.CVar("f"), { exp.FCall(exp.CVar("g"), { exp.CVar("a")})}}}
+    { "f(g(a))", exp.FCall(exp.CVar("f"), { exp.FCall(exp.CVar("g"), { exp.CVar("a")}) })}
 }
 
 local parse_stmt_tests = {

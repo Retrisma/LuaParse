@@ -48,6 +48,7 @@ end
 
 parse_exp, parse_exp_ref = create_parser_forwarded_to_ref()
 parse_stmt, parse_stmt_ref = create_parser_forwarded_to_ref()
+parse_block, parse_block_ref = create_parser_forwarded_to_ref()
 
 local function ret_binop(symbol, binop_def)
     return parse_symbol(symbol) >> return_p(function(x, y) return exp.Binop(binop_def(x, y)) end)
@@ -75,8 +76,8 @@ local parse_unop = choice {
 }
 
 local parse_table_field = choice {
-    between_brackets(parse_exp) & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFExp,
-    parse_any_ident & (parse_symbol("=") >> parse_exp) ~ tbl_field.TFId,
+    between_brackets(parse_exp) & (parse_symbol("=") >> parse_exp) ~ map2(tbl_field.TFExp),
+    parse_any_ident & (parse_symbol("=") >> parse_exp) ~ map2(tbl_field.TFId),
     parse_exp ~ tbl_field.TFNone
 }
 
@@ -97,7 +98,10 @@ local parse_rhs = choice {
     end,
     parse_function_args ~ function(args)
         return function(e) return exp.FCall(e, args) end
-    end
+    end,
+    parse_symbol(":") >> (parse_any_ident & parse_function_args) ~ map2(function(id, args)
+        return function(e) return exp.MCall(e, id, args) end
+    end)
 }
 
 local parse_lhs = choice {
@@ -125,5 +129,8 @@ local and_binop = chainl1(and_unop, parse_binop)
 parse_exp_ref.value = and_binop
 
 parse_stmt_ref.value = choice {
+    parse_symbol(";"),
     sep(parse_lrhs, parse_symbol(",")) & (parse_symbol("=") >> sep(parse_exp, parse_symbol(","))) ~ stmt.Assn
 }
+
+parse_block_ref.value = many(parse_stmt) ~ block.Block

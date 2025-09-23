@@ -129,10 +129,7 @@ end
 ---@return Parser
 function and_keep_left(parser_before, parser_after)
     local result = parser_before & parser_after
-    return result ~ function(o)
-        local a,_ = table.unfold2(o)
-        return a
-    end
+    return result ~ map2(function(a, _) return a end)
 end
 
 ---@param parser_before Parser
@@ -140,10 +137,8 @@ end
 ---@return Parser
 function and_keep_right(parser_before, parser_after)
     local result = parser_before & parser_after
-    return result ~ function(o)
-        local _,b = table.unfold2(o)
-        return b
-    end
+        return result ~ map2(function(_, b) return b end)
+
 end
 
 ---@param parser Parser
@@ -189,11 +184,10 @@ end
 
 function sep_by_1(parser, sep_parser)
     local sep_then_p = sep_parser >> parser
-    return (parser & many(sep_then_p)) ~ function(o)
-        local p, plist = table.unfold2(o)
+    return (parser & many(sep_then_p)) ~ map2(function(p, plist)
         table.insert(plist, 1, p)
         return plist
-    end
+    end)
 end
 
 function sep(parser, sep_parser)

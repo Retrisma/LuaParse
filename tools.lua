@@ -32,19 +32,9 @@ function table.reduce(tbl, fn)
     return tbl[1]
 end
 
-function table.unfold2(tbl)
-    return tbl[1], tbl[2]
-end
-
-function table.unfold(tbl)
-    local unfolders = {
-        [2] = table.unfold2
-    }
-
-      if (not tbl) or (type(tbl) ~= "table") or #tbl <= 1 then
-        return tbl
-    else
-        return unfolders[#tbl](tbl)
+function map2(f)
+    return function(tbl)
+        return f(tbl[1], tbl[2])
     end
 end
 
@@ -68,6 +58,18 @@ function print_node(node)
     end
 
     io.write(")")
+end
+
+function calc_node_titles()
+    local out = {}
+
+    for _,v in pairs(grammar_levels) do
+        for _, node in pairs(v) do
+            table.insert(out, node() and node()[1] or nil)
+        end
+    end
+
+    return out
 end
 
 function print_tree(tree)

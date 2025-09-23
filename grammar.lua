@@ -1,4 +1,6 @@
-block = function(stmts) return stmts end
+block = {
+    Block = function(stmts) return { "Block", stmts } end
+}
 
 option = {
     Some = function(val) return { "Some", val } end,
@@ -6,7 +8,6 @@ option = {
 }
 
 stmt = {
-    Pass = function() return { "Pass" } end,
     Assn = function(ident, val) return { "Assn", ident, val } end,
     ITE = function(if_blocks, else_block_option) return { "ITE", if_blocks, else_block_option } end
 }
@@ -29,6 +30,7 @@ exp = {
     Unop = function(unop) return unop end,
     CFun = function(args, block) return { "CFun", args, block } end,
     FCall = function(exp, args) return { "FCall", exp, args } end,
+    MCall = function(exp, id, args) return { "MCall", exp, id, args } end,
     Proj = function(p_exp, exp) return { "Proj", p_exp, exp } end
 }
 
@@ -46,33 +48,7 @@ unop = {
     Neg = function(exp) return { "Neg", exp } end
 }
 
-grammar_levels = { option, stmt, tbl_field, exp, binop, unop }
-
-local function calc_node_titles()
-    local out = {}
-
-    for _,v in pairs(grammar_levels) do
-        for _, node in pairs(v) do
-            table.insert(out, node() and node()[1] or nil)
-        end
-    end
-
-    return out
-end
-
-node_titles = calc_node_titles()
-
-for _,t in pairs(grammar_levels) do
-    for k,v in pairs(t) do
-        t[k] = function(o)
-            if type(o) == "table" and table.has(node_titles, o[1]) then
-                return v(o)
-            end
-
-            return v(table.unfold(o))
-        end
-    end
-end
+grammar_levels = { block, option, stmt, tbl_field, exp, binop, unop }
 
 reserved_words = {
     "and", "break", "do", "else", "elseif",
