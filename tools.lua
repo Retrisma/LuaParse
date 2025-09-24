@@ -38,6 +38,18 @@ function map2(f)
     end
 end
 
+function map3(f)
+    return function(tbl)
+        return f(tbl[1][1], tbl[1][2], tbl[2])
+    end
+end
+
+function map4(f)
+    return function(tbl)
+        return f(tbl[1][1][1], tbl[1][1][2], tbl[1][2], tbl[2])
+    end
+end
+
 function table.map(tbl, fn)
     for k,v in pairs(tbl) do
         tbl[k] = fn(v)

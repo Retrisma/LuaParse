@@ -36,6 +36,7 @@ local parse_stmt_tests = {
     { "while y do end", stmt.While(exp.CVar("y"), block.Block{ })},
     { "while x do while y do x = 5 end end", stmt.While(exp.CVar("x"), block.Block{stmt.While(exp.CVar("y"), block.Block{ stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) })})},
     { "repeat x = 5 until true", stmt.Repeat(block.Block{ stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) }, exp.CBool("true"))}
+    -- todo: add test cases for ITE, Do, goto, label, return, break
 }
 
 function ast_equal(ast, reference)

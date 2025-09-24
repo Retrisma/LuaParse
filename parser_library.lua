@@ -205,6 +205,7 @@ end
 function between_parens(parser) return between("(", parser, ")") end
 function between_brackets(parser) return between("[", parser, "]") end
 function between_braces(parser) return between("{", parser, "}") end
+function between_colons(parser) return between("::", parser, "::") end
 
 function chainl1(parser, op_parser)
     local function rest(acc)

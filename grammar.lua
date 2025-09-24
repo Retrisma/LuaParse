@@ -4,14 +4,20 @@ block = {
 
 option = {
     Some = function(val) return { "Some", val } end,
-    None = function() return {} end
+    None = function() return { "None" } end
 }
 
 stmt = {
+    Pass = function() return { "Pass" } end,
     Assn = function(ident, val) return { "Assn", ident, val } end,
+    Do = function(block) return { "Do", block } end,
     While = function(exp, block) return { "While", exp, block } end,
     Repeat = function(block, exp) return { "Repeat", block, exp } end,
-    ITE = function(if_blocks, else_if_blocks, else_block_option) return { "ITE", if_blocks, else_if_blocks, else_block_option } end
+    ITE = function(if_exp, then_block, else_if_blocks, else_block_option) return { "ITE", if_exp, then_block, else_if_blocks, else_block_option } end,
+    Goto = function(label) return { "Goto", label } end,
+    Label = function(label) return { "Label", label } end,
+    Break = function() return { "Break" } end,
+    Return = function(exps) return { "Return", exps } end
 }
 
 tbl_field = {

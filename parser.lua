@@ -58,9 +58,6 @@ local function ret_unop(symbol, unop_def)
     return parse_symbol(symbol) >> return_p(function(x) return exp.Unop(unop_def(x)) end)
 end
 
-local function ret_fcall()
-end
-
 local parse_binop = choice {
     ret_binop("+", binop.Add),
     ret_binop("-", binop.Sub),
@@ -129,10 +126,18 @@ local and_binop = chainl1(and_unop, parse_binop)
 parse_exp_ref.value = and_binop
 
 parse_stmt_ref.value = choice {
-    parse_symbol(";"),
+    parse_symbol(";") ~ stmt.Pass,
     sep(parse_lrhs, parse_symbol(",")) & parse_symbol("=") >> sep(parse_exp, parse_symbol(",")) ~ map2(stmt.Assn),
+    parse_symbol("do") >> parse_block << parse_symbol("end") ~ stmt.Do,
     parse_symbol("while") >> parse_exp & parse_symbol("do") >> parse_block << parse_symbol("end") ~ map2(stmt.While),
-    parse_symbol("repeat") >> parse_block & parse_symbol("until") >> parse_exp ~ map2(stmt.Repeat)
+    parse_symbol("repeat") >> parse_block & parse_symbol("until") >> parse_exp ~ map2(stmt.Repeat),
+    parse_symbol("if") >> parse_exp & parse_symbol("then") >> parse_block
+        & many(parse_symbol("elseif") >> parse_exp & parse_symbol("then") >> parse_block)
+        & optional(parse_symbol("else") >> parse_block) << parse_symbol("end") ~ map4(stmt.ITE),
+    parse_symbol("goto") >> parse_any_ident ~ stmt.Goto,
+    between_colons(parse_any_ident) ~ stmt.Label,
+    parse_symbol("break") ~ stmt.Break,
+    parse_symbol("return") >> sep(parse_exp, parse_symbol(",")) << optional(parse_symbol(";")) ~ stmt.Return
 }
 
 parse_block_ref.value = many(parse_stmt) ~ block.Block
