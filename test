@@ -1,1 +1,1 @@
-::x::
+if true then return elseif nil then break elseif 4 then goto label else x = 5 end

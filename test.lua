@@ -32,11 +32,20 @@ local parse_stmt_tests = {
     { "x = 5", stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) },
     { "x, y = 1, 2", stmt.Assn({exp.CVar("x"), exp.CVar("y")}, {exp.CNum(1), exp.CNum(2)}) },
     { "x[3] = true", stmt.Assn({exp.Proj(exp.CVar("x"), exp.CNum(3))}, {exp.CBool("true")}) },
+    { "do x = 5 y = 6 end", stmt.Do(block.Block{stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}), stmt.Assn({exp.CVar("y")}, {exp.CNum(6)}) })},
     { "while true do x = 5 end", stmt.While(exp.CBool("true"), block.Block{ stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) })},
     { "while y do end", stmt.While(exp.CVar("y"), block.Block{ })},
     { "while x do while y do x = 5 end end", stmt.While(exp.CVar("x"), block.Block{stmt.While(exp.CVar("y"), block.Block{ stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) })})},
-    { "repeat x = 5 until true", stmt.Repeat(block.Block{ stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) }, exp.CBool("true"))}
-    -- todo: add test cases for ITE, Do, goto, label, return, break
+    { "repeat x = 5 until true", stmt.Repeat(block.Block{ stmt.Assn({exp.CVar("x")}, {exp.CNum(5)}) }, exp.CBool("true"))},
+    { "::label::", stmt.Label("label")},
+    { "goto label", stmt.Goto("label")},
+    { "return", stmt.Return{}},
+    { "return 5", stmt.Return{ exp.CNum(5)}},
+    { "return 5, x, true", stmt.Return{ exp.CNum(5), exp.CVar("x"), exp.CBool("true")}},
+    { "break", stmt.Break()},
+    { "if true then return end", stmt.ITE(exp.CBool("true"), block.Block{stmt.Return{}}, {}, option.None())},
+    { "if true then return elseif nil then break elseif 4 then goto label else x = 5 end",
+        stmt.ITE(exp.CBool("true"), block.Block{stmt.Return{}}, {{exp.Nil(), block.Block{stmt.Break()}}; {exp.CNum(4), block.Block{ stmt.Goto("label") }}}, option.Some(block.Block{stmt.Assn({exp.CVar("x")}, {exp.CNum(5)})}))},
 }
 
 function ast_equal(ast, reference)
